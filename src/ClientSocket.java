@@ -53,6 +53,16 @@ public class ClientSocket {
         socket.close();
     }
 
+    @Override
+    public String toString() {
+
+        String MyString = socket.getRemoteSocketAddress().toString();
+        MyString = MyString.replace("/", "");
+        
+        
+        return "{Usuario: \""+usuario.getNome()+"\",\"Conexão\":\""+ MyString+"\"}";
+    }
+
     public SocketAddress getRemoteSocketAddress() {
 
         return socket.getRemoteSocketAddress();

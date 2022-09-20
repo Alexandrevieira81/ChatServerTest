@@ -88,6 +88,11 @@ public class ChatServer {
                     clientSocket.sendMsg(null);
                     break;
                 }
+                   if ("lista".equalsIgnoreCase(msg)) {
+                    
+                    clientSocket.sendMsg(clients.toString().replace("[", "").replace("]","").replace(" ", ""));
+                    
+                }
                 //clientSocket.sendMsg("[ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + " Servidor: " + msg);
                 Broadcasting(clientSocket, msg);
             }
