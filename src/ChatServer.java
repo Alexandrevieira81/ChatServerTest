@@ -64,6 +64,7 @@ public class ChatServer {
         String temp = (clientSocket.getMessage());
 
         JSONObject json;
+        JSONObject params;
         JSONParser parser = new JSONParser();
         CarregaUsuarios listarUsuarios = new CarregaUsuarios();
         Usuario user = new Usuario();
@@ -71,8 +72,13 @@ public class ChatServer {
         //arrumar ancadeamento para as exceções
         try {
             json = (JSONObject) parser.parse(temp);
-            String nome = (String) json.get("ra");
-            String senha = (String) json.get("senha");
+            String operacao = (String) json.get("operacao");
+         
+            
+            params = (JSONObject)json.get("params");
+            String nome = (String) params.get("ra");
+            String senha = (String) params.get("senha");
+            System.out.println(operacao);
             System.out.println(nome);
             System.out.println(senha);
 
