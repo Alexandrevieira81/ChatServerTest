@@ -60,7 +60,7 @@ public class ClientSocket {
         MyString = MyString.replace("/", "");
         
         
-        return "{Usuario: \""+usuario.getNome()+"\",\"Conexão\":\""+ MyString+"\"}";
+        return "{\"Usuario\": \""+usuario.getNome()+"\",\"Conexão\":\""+ MyString+"\"}";
     }
 
     public SocketAddress getRemoteSocketAddress() {

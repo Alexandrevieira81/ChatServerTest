@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -64,15 +66,19 @@ public class ChatServer {
         String temp = (clientSocket.getMessage());
 
         JSONObject json;
+
         JSONObject params;
-        JSONParser parser = new JSONParser();
+
+        JSONParser parserMessage = new JSONParser();
         CarregaUsuarios listarUsuarios = new CarregaUsuarios();
         Usuario user = new Usuario();
+        String operacao = " ";
+        String conteudoMsg = " ";
 
         //arrumar ancadeamento para as exceções
         try {
-            json = (JSONObject) parser.parse(temp);
-            String operacao = (String) json.get("operacao");
+            json = (JSONObject) parserMessage.parse(temp);
+            operacao = (String) json.get("operacao");
 
             params = (JSONObject) json.get("params");
             String nome = (String) params.get("ra");
@@ -84,30 +90,9 @@ public class ChatServer {
             System.out.println(user.getNome());//captura a exceção sem precisar usar um id throw new
             clientSocket.setUsuario(user);
             clients.add(clientSocket);
-            
-            JSONObject retorno = new JSONObject();
-            retorno.put("status", "200");
-            retorno.put("mensagem", "Login efetuado com Sucesso");
-            clientSocket.sendMsg(retorno.toJSONString());
-           
-            
-            while ((msg = clientSocket.getMessage()) != null) {
-                if ("sair#$%".equalsIgnoreCase(msg)) {
-                    System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
-                    clientSocket.sendMsg(null);
-                    break;
-                }
-                if ("lista".equalsIgnoreCase(msg)) {
-
-                    clientSocket.sendMsg(clients.toString().replace("[", "").replace("]", "").replace(" ", ""));
-
-                }
-                //clientSocket.sendMsg("[ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + " Servidor: " + msg);
-                Broadcasting(clientSocket, msg);
-            }
 
         } catch (ParseException ex) {
-            
+
             System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
             JSONObject retorno = new JSONObject();
             retorno.put("status", "401");
@@ -127,6 +112,46 @@ public class ChatServer {
             clientSocket.closeInOut();
         }
 
+        JSONObject retorno = new JSONObject();
+        retorno.put("status", "200");
+        retorno.put("mensagem", "Login efetuado com Sucesso");
+        clientSocket.sendMsg(retorno.toJSONString());
+
+        while ((msg = clientSocket.getMessage()) != null) {
+            if ("sair#$%".equalsIgnoreCase(msg)) {
+                System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
+                clientSocket.sendMsg(null);
+                clients.remove(clientSocket);
+                break;
+            }
+            System.out.println("Chegou do cliente " + msg);
+            try {
+
+                json = (JSONObject) parserMessage.parse(msg);
+
+                if ((operacao = (String) json.get("operacao")) == null) {
+                    operacao = "";
+                }
+                if ((conteudoMsg = (String) json.get("mensagem")) == null) {
+                    conteudoMsg = "";
+                }
+
+            } catch (ParseException ex) {
+                Logger.getLogger(ChatServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            if (operacao.equals("lista")) {
+                System.out.println("entrou na lista");
+
+                clientSocket.sendMsg("{\"operacao\":\"lista\",\"mensagem\":[" + clients.toString().replace("[", "").replace("]", "").replace(" ", "") + "]}");
+
+            }
+            //clientSocket.sendMsg("[ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + " Servidor: " + msg);
+            if (operacao.equals("mensagem")) {
+                Broadcasting(clientSocket, conteudoMsg);
+            }
+        }
+
         /*Movido para esse método,´pois no método ClientConectionLoop
           ele trava o cliente. Tanta atribuição do nome quanto a adição
           na lista de clientes tem que ficar fora do while.
@@ -142,8 +167,8 @@ public class ChatServer {
 
             if (!sender.equals(clientSocket)) {
                 //parâmetro sendo verifica o remetente da msg, assim evita enviar o mensagem pra vc mesmo
-                if (!clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"["+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + sender.getUsuario().getNome() + " : " + msg+"\"}")) {
-                    
+                if (!clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "Passando no Broadcasting]" + sender.getUsuario().getNome() + " : " + msg + "\"}")) {
+
                     //caso servidor tente mandar a mensagem e o cliente não respoder ele remove o cliente da lista
                     iterator.remove();
                 }
