@@ -73,14 +73,10 @@ public class ChatServer {
         try {
             json = (JSONObject) parser.parse(temp);
             String operacao = (String) json.get("operacao");
-         
-            
-            params = (JSONObject)json.get("params");
+
+            params = (JSONObject) json.get("params");
             String nome = (String) params.get("ra");
             String senha = (String) params.get("senha");
-            System.out.println(operacao);
-            System.out.println(nome);
-            System.out.println(senha);
 
             //System.out.println("Json "+ user.getNome());
             //clientSocket.setLogin(clientSocket.getMessage());
@@ -88,30 +84,45 @@ public class ChatServer {
             System.out.println(user.getNome());//captura a exceção sem precisar usar um id throw new
             clientSocket.setUsuario(user);
             clients.add(clientSocket);
+            
+            JSONObject retorno = new JSONObject();
+            retorno.put("status", "200");
+            retorno.put("mensagem", "Login efetuado com Sucesso");
+            clientSocket.sendMsg(retorno.toJSONString());
+           
+            
             while ((msg = clientSocket.getMessage()) != null) {
                 if ("sair#$%".equalsIgnoreCase(msg)) {
                     System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
                     clientSocket.sendMsg(null);
                     break;
                 }
-                   if ("lista".equalsIgnoreCase(msg)) {
-                    
-                    clientSocket.sendMsg(clients.toString().replace("[", "").replace("]","").replace(" ", ""));
-                    
+                if ("lista".equalsIgnoreCase(msg)) {
+
+                    clientSocket.sendMsg(clients.toString().replace("[", "").replace("]", "").replace(" ", ""));
+
                 }
                 //clientSocket.sendMsg("[ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + " Servidor: " + msg);
                 Broadcasting(clientSocket, msg);
             }
 
         } catch (ParseException ex) {
-            System.out.println("Formato incorreto do arquivo JSON");
+            
             System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
+            JSONObject retorno = new JSONObject();
+            retorno.put("status", "401");
+            retorno.put("mensagem", "Formato do Protocolo Incorreto");
+            clientSocket.sendMsg(retorno.toJSONString());
             clientSocket.sendMsg(null);
             clientSocket.closeInOut();
         } catch (NullPointerException e) {
 
             System.out.println("Cliente Nao Encontrado!");
             System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
+            JSONObject retorno = new JSONObject();
+            retorno.put("status", "401");
+            retorno.put("mensagem", "Cliente Nao Encontado!");
+            clientSocket.sendMsg(retorno.toJSONString());
             clientSocket.sendMsg(null);
             clientSocket.closeInOut();
         }
@@ -131,7 +142,8 @@ public class ChatServer {
 
             if (!sender.equals(clientSocket)) {
                 //parâmetro sendo verifica o remetente da msg, assim evita enviar o mensagem pra vc mesmo
-                if (!clientSocket.sendMsg("[ " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + sender.getUsuario().getNome() + " : " + msg)) {
+                if (!clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"["+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " ]" + sender.getUsuario().getNome() + " : " + msg+"\"}")) {
+                    
                     //caso servidor tente mandar a mensagem e o cliente não respoder ele remove o cliente da lista
                     iterator.remove();
                 }
