@@ -76,6 +76,7 @@ public class ChatServer {
         String conteudoMsg = " ";
 
         //arrumar ancadeamento para as exceções
+        System.out.println("Protocolo de Login: "+temp);
         try {
             json = (JSONObject) parserMessage.parse(temp);
             operacao = (String) json.get("operacao");
@@ -87,13 +88,13 @@ public class ChatServer {
             //System.out.println("Json "+ user.getNome());
             //clientSocket.setLogin(clientSocket.getMessage());
             user = listarUsuarios.localizarUsuario(nome, senha);
-            System.out.println(user.getNome());//captura a exceção sem precisar usar um id throw new
+            System.out.println("Cliente Logado: " + user.getNome());//captura a exceção sem precisar usar um id throw new
             clientSocket.setUsuario(user);
             clients.add(clientSocket);
 
         } catch (ParseException ex) {
 
-            System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
+            System.out.println("Socket fechado para o cliente: " + clientSocket.getRemoteSocketAddress());
             JSONObject retorno = new JSONObject();
             retorno.put("status", "401");
             retorno.put("mensagem", "Formato do Protocolo Incorreto");
@@ -103,7 +104,7 @@ public class ChatServer {
         } catch (NullPointerException e) {
 
             System.out.println("Cliente Nao Encontrado!");
-            System.out.println("Socket fechado para o cliente " + clientSocket.getRemoteSocketAddress());
+            System.out.println("Socket fechado para o cliente: " + clientSocket.getRemoteSocketAddress());
             JSONObject retorno = new JSONObject();
             retorno.put("status", "401");
             retorno.put("mensagem", "Cliente Nao Encontado!");
@@ -124,7 +125,7 @@ public class ChatServer {
                 clients.remove(clientSocket);
                 break;
             }
-            System.out.println("Chegou do cliente " + msg);
+            System.out.println("Protocolo vindo do cliente: " + msg);
             try {
 
                 json = (JSONObject) parserMessage.parse(msg);
@@ -141,7 +142,7 @@ public class ChatServer {
             }
 
             if (operacao.equals("lista")) {
-                System.out.println("entrou na lista");
+                
 
                 clientSocket.sendMsg("{\"operacao\":\"lista\",\"mensagem\":[" + clients.toString().replace("[", "").replace("]", "").replace(" ", "") + "]}");
 
@@ -167,7 +168,7 @@ public class ChatServer {
 
             if (!sender.equals(clientSocket)) {
                 //parâmetro sendo verifica o remetente da msg, assim evita enviar o mensagem pra vc mesmo
-                if (!clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "Passando no Broadcasting]" + sender.getUsuario().getNome() + " : " + msg + "\"}")) {
+                if (!clientSocket.sendMsg("{\"operacao\":\"mensagem\",\"mensagem\":\"[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "]" + sender.getUsuario().getNome() + " : " + msg + "\"}")) {
 
                     //caso servidor tente mandar a mensagem e o cliente não respoder ele remove o cliente da lista
                     iterator.remove();

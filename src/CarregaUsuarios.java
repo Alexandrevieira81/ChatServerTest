@@ -20,7 +20,7 @@ public class CarregaUsuarios {
 
         Usuario user1 = new Usuario("Alex", "1488880", "123");
         Usuario user2 = new Usuario("Ive", "4788880", "321");
-        Usuario user3 = new Usuario("Breno","1202020", "123");
+        Usuario user3 = new Usuario("Breno", "1202020", "123");
 
         this.usuarios[0] = user1;
         this.usuarios[1] = user2;
@@ -39,11 +39,7 @@ public class CarregaUsuarios {
             }
 
         }
-        if (i == this.usuarios.length) {
 
-            System.out.println("Usuario Invalido");
-
-        }
         return null;
     }
 
